@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Temporary media & output videos
+audio_clip*
+stitched_video.mp4
+segments.txt
+lyrics.ass
+clips/
+scratch/
+login_result.png
+*.png
+
+# Large executables (keep out of git)
+ffmpeg.exe
+ffprobe.exe

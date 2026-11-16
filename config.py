@@ -1,0 +1,2 @@
+# config.py
+PEXELS_API_KEY = "YqSTRqOFEdta0Ei3FOn01OsEHQzXo5ZC6FQVcBRZHXtl2ObfuF4SweZm"
