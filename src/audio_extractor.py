@@ -15,6 +15,11 @@ def download_audio(url: str, start_time: str = None, end_time: str = None, outpu
         'writeautomaticsub': True,
         'subtitleslangs': ['en'],
         'subtitlesformat': 'vtt',
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios', 'web_creator', 'mweb']
+            }
+        },
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -24,24 +29,26 @@ def download_audio(url: str, start_time: str = None, end_time: str = None, outpu
         'noplaylist': True,
     }
     
-    # Try multiple browsers to find one with active YouTube cookies to bypass bot checks
-    browsers = ['chrome', 'edge', 'firefox', 'brave', 'opera']
+    # Try multiple browsers to find one with active YouTube cookies to bypass bot checks (on local desktop)
+    browsers = ['firefox', 'chrome', 'edge', 'brave', 'opera']
     success = False
     
-    for browser in browsers:
-        ydl_opts['cookiesfrombrowser'] = (browser,)
-        print(f"Attempting to download audio using {browser} cookies...")
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
-            success = True
-            break
-        except Exception as e:
-            print(f"Failed with {browser} cookies: {e}")
+    # Only attempt browser cookies if on Windows/Desktop environment
+    if os.name == 'nt':
+        for browser in browsers:
+            ydl_opts['cookiesfrombrowser'] = (browser,)
+            print(f"Attempting to download audio using {browser} cookies...")
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
+                success = True
+                break
+            except Exception as e:
+                print(f"Failed with {browser} cookies: {e}")
             
     if not success:
-        # Final fallback without cookies
-        print("All cookie attempts failed, trying without cookies...")
+        # Fallback without browser cookies using android/ios player clients (crucial for cloud/Linux deployment)
+        print("Downloading without browser cookies using mobile player clients...")
         if 'cookiesfrombrowser' in ydl_opts:
             del ydl_opts['cookiesfrombrowser']
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

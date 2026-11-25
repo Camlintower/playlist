@@ -12,13 +12,13 @@ from src.nlp_processor import determine_aesthetic
 from src.local_library import get_local_clips
 from src.video_assembler import assemble_video, burn_subtitles
 
-def cleanup_old_reels(max_reels=5, pattern="output_reel_*.mp4"):
+def cleanup_old_reels(max_reels=3, pattern="output_reel_*.mp4"):
     """Maintains a First-In-First-Out (FIFO) queue of generated reels, keeping at most max_reels."""
     existing_reels = glob.glob(pattern)
     if len(existing_reels) >= max_reels:
         # Sort by creation / modification time (oldest first)
         existing_reels.sort(key=os.path.getmtime)
-        # Delete excess oldest reels
+        # Delete excess oldest reels to ensure at most max_reels - 1 exist before creating a new one
         num_to_delete = len(existing_reels) - max_reels + 1
         for old_reel in existing_reels[:num_to_delete]:
             try:
@@ -28,7 +28,7 @@ def cleanup_old_reels(max_reels=5, pattern="output_reel_*.mp4"):
                 print(f"Error removing {old_reel}: {e}")
 
 def get_next_output_name(base_name="output_reel", ext=".mp4"):
-    cleanup_old_reels(max_reels=5)
+    cleanup_old_reels(max_reels=3)
     counter = 1
     while True:
         filename = f"{base_name}_{counter}{ext}"
@@ -71,19 +71,27 @@ def generate_reel(url: str, song_title_override: str = None, start_time: str = N
         print(f"Using manual song title override: {song_title}")
     else:
         print("Fetching song metadata...")
-        ydl_opts = {'quiet': True}
-        browsers = ['chrome', 'edge', 'firefox']
+        ydl_opts = {
+            'quiet': True,
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'ios', 'web_creator', 'mweb']
+                }
+            }
+        }
+        browsers = ['firefox', 'chrome', 'edge']
         info = None
         
-        for browser in browsers:
-            ydl_opts['cookiesfrombrowser'] = (browser,)
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                try:
-                    info = ydl.extract_info(url, download=False)
-                    if info: break
-                except:
-                    pass
-                    
+        if os.name == 'nt':
+            for browser in browsers:
+                ydl_opts['cookiesfrombrowser'] = (browser,)
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    try:
+                        info = ydl.extract_info(url, download=False)
+                        if info: break
+                    except:
+                        pass
+                        
         if not info:
             if 'cookiesfrombrowser' in ydl_opts:
                 del ydl_opts['cookiesfrombrowser']

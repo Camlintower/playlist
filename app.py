@@ -106,19 +106,20 @@ if submit:
                         aesthetic_override=aesthetic_override
                     )
                     
-                    st.success(f"Reel Generated Successfully: `{os.path.basename(output_video)}`")
+                    st.success(f"✅ Reel Generated Successfully: `{os.path.basename(output_video)}`")
                     st.video(output_video)
                     
                     with open(output_video, "rb") as file:
                         video_bytes = file.read()
-                        st.download_button(
-                            label="⬇️ Download Generated Reel",
-                            data=video_bytes,
-                            file_name=os.path.basename(output_video),
-                            mime="video/mp4",
-                            type="primary",
-                            use_container_width=True
-                        )
+                    
+                    st.download_button(
+                        label="⬇️ Download Video",
+                        data=video_bytes,
+                        file_name=os.path.basename(output_video),
+                        mime="video/mp4",
+                        type="primary",
+                        use_container_width=True
+                    )
                 except Exception as e:
                     import traceback
                     st.error(f"An error occurred: {e}")
